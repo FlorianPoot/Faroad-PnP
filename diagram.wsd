@@ -1,0 +1,40 @@
+@startuml FAROAD_PNP
+hide empty description
+
+header
+FAROAD PnP Convert Tool
+endheader
+
+[*] --> Fichier
+Fichier : Ouverture du fichier client et sélection\ndu dossier de destination
+
+Fichier -down-> Paramètres
+Paramètres : Sélection des unités, de la rotation\net des offsets
+
+Paramètres --> Conversion
+state Conversion {
+    Client -right-> Faroad : Conversion du fichier
+
+    Client : R6  0805_2012  11.684mm  -4.2418mm           
+    Client : R5  0805_2012  19.005mm  10.4902mm          
+    Client : R4  0805_2012  15.544mm  10.4902mm            
+    Client : R3  0805_2012  8.2806mm  -4.2418mm
+
+    Faroad : 38.316 9.242 0.000 R006 000137:R0805:1K:1%
+    Faroad : 30.994 15.490 0.000 R005 000006:R0805:10K:1%
+    Faroad : 34.455 15.490 360.000 R004 000006:R0805:10K:1%
+    Faroad : 41.720 9.242 180.000 R003 001046:R0805:2K2:1%
+
+    Faroad -down-> Validation
+    Validation : Validation manuelle à chaque étape
+}
+
+Conversion -down-> Création
+Création : Création du fichier Pick and Place final
+
+
+footer
+Copyright (c) 2022 Florian Poot
+endfooter
+
+@enduml
