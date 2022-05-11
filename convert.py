@@ -7,44 +7,52 @@ DATABASE_PATH = "line1.db"
 
 class Convert:
 
+    model_altium = {"desc": 0, "designator": (1, 10), "position": (2, 3), "rotation": 9}
+    model_kicad = {"desc": 0, "designator": (1, 2), "position": (3, 4), "rotation": 5}
+    model_mnt = {"desc": 0, "designator": (4, 5), "position": (1, 2), "rotation": 3}
+    model_ultiboard = {"desc": 0, "designator": (1, 7), "position": (2, 3), "rotation": 4}
+
     def __init__(self, path: str):
         self.path = path
-
-        self.model_altium = {"name": "altium", "desc": 0, "designator": (1, 10), "position": (2, 3), "rotation": 9}
-        self.model_kicad = {"name": "kicad", "desc": 0, "designator": (1, 2), "position": (3, 4), "rotation": 5}
-        self.model_mnt = {"name": "mnt", "desc": 0, "designator": (4, 5), "position": (1, 2), "rotation": 3}
 
     def parse(self) -> list:
         """Parse data from pick and place file"""
 
-        # TODO Work only for 3 types of file
+        # TODO Work only for 4 types of file
         # TODO Read already generated file
 
         with open(self.path, "r") as file:
             lines = file.readlines()
 
+        lines = [line.replace("\n", "") for line in lines]  # Remove new line
         if lines[0].split() == ['Designator', 'Footprint', 'Mid', 'X', 'Mid', 'Y',
                                 'Ref', 'X', 'Ref', 'Y', 'Pad', 'X', 'Pad', 'Y', 'TB', 'Rotation', 'Comment']:
-            file_model = self.model_altium
-        elif lines[0] == "Ref,Val,Package,PosX,PosY,Rot,Side\n":
-            file_model = self.model_kicad
-        elif self.path[-3:] == "mnt":
-            file_model = self.model_mnt
-        else:
-            raise ValueError("Unknown file model")
 
-        lines = [line.replace("\n", "") for line in lines]  # Remove new line
-        if file_model["name"] == "altium":
+            file_model = self.model_altium
             lines = [[s.strip() for s in line.split(" ") if s] for line in lines]
             lines = lines[2:]  # Remove header
-        elif file_model["name"] == "kicad":
+
+        elif lines[0] == "Ref,Val,Package,PosX,PosY,Rot,Side\n":
+
+            file_model = self.model_kicad
             lines = [line.replace('"', "") for line in lines]
             lines = [line.split(",") for line in lines]
             lines = lines[1:]  # Remove header
-        elif file_model["name"] == "mnt":
+
+        elif lines[0] == "Ultiboard Information Export File":
+
+            file_model = self.model_ultiboard
+            lines = lines[9:]  # Remove header
+            lines = [line.split() for line in lines]
+
+        elif self.path[-3:] == "mnt":
+
+            file_model = self.model_mnt
             lines = [line.replace("-", " ") for line in lines]
             lines = [line.split() for line in lines]
-            print(lines)
+
+        else:
+            raise ValueError("Unknown file model")
 
         data = list()
         for line in lines:
